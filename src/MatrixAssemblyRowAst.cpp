@@ -285,16 +285,12 @@ int main() {
   std::cout << "--------------------\n\n";
 
   std::cout << "- ProdSum, ProdDiff\n";
-  tester.test(I * (I + I), twoI, fieldMap, nrows, "RMult by Sum", testDisplay);
-  tester.test(I * (I + I + I), threeI, fieldMap, nrows, "RMult by Sum x2",
-              testDisplay);
-  tester.test(I * (I + I - I), I, fieldMap, nrows, "RMult by Sum+Diff",
-              testDisplay);
-  tester.test(I * (I - I), Z, fieldMap, nrows, "RMult by Diff", testDisplay);
-  tester.test(I * (I - I - I), mI, fieldMap, nrows, "RMult by Diff x2",
-              testDisplay);
-  tester.test(I * (I - I + I), I, fieldMap, nrows, "RMult by Diff+Sum",
-              testDisplay);
+  tester.test(I * (I + I), twoI, fieldMap, nrows, "*Sum", testDisplay);
+  tester.test(I * (I + I + I), threeI, fieldMap, nrows, "*Sum x2", testDisplay);
+  tester.test(I * (I + I - I), I, fieldMap, nrows, "*(Sum+Diff)", testDisplay);
+  tester.test(I * (I - I), Z, fieldMap, nrows, "*Diff", testDisplay);
+  tester.test(I * (I - I - I), mI, fieldMap, nrows, "*Diff x2", testDisplay);
+  tester.test(I * (I - I + I), I, fieldMap, nrows, "*(Diff+Sum)", testDisplay);
   std::cout << "--------------------\n\n";
 
   tester.report();
