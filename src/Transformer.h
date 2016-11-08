@@ -6,23 +6,18 @@
 
 namespace ast {
 
-// A * B, B is a sparse matrix never formed
-// B = [1 0 0 0,
-//      2 1 0 0,
-//      0 2 1 0,
-//      0 0 2 1],
-//
-// AB = [A11 + 2*A12, A12 + 2*A13, A13 + 2*A14, A14,
-//       A21 + 2*A22, A22 + 2*A23, A23 + 2*A24, A24,
-//       A31 + 2*A32, A32 + 2*A33, A33 + 2*A34, A34,
-//       A41 + 2*A42, A42 + 2*A43, A43 + 2*A44, A44],
-//
-// so each row i of A is turned into the following row in AB
-//      [Ai1 + 2*Ai2, Ai2 + 2*Ai3, Ai3 + 2*Ai4, Ai4]
-//
-// we therefore do a scratch row and loop instead of a scratch matrix
-//
-// apply the sparse transformation to a single row
+/*
+ * @brief this method is used by the Transformer class below.
+ *
+ * This function performs right multiplication by the 4x4 matrix:
+ * B = [1 0 0 0,
+ *      2 1 0 0,
+ *      0 2 1 0,
+ *      0 0 2 1].
+ *
+ * The first row of A*B for a matrix A is then
+ * [A11 + 2*A12, A12 + 2*A13, A13 + 2*A14, A14].
+ */
 template <typename FieldType>
 void apply_to_row(std::vector<FieldType*>& row) {
   const std::size_t nrows = row.size();
@@ -36,13 +31,24 @@ void apply_to_row(std::vector<FieldType*>& row) {
   }
 }
 
-// a Transformer only does right multiplication, and it uses the function above
+/*
+ * @class Transformer
+ *
+ * This type of assembler is only capable of being right multiplied on another
+ * assembler. It cannot be emplaced, added, or subtracted, because the
+ * assemble(...,Place), ... methods are not defined. If an emplacement is
+ * attempted, the base class (AssemblerBase) assemble(...,Place) method will be
+ * called and a runtime error will be thrown.
+ *
+ * This class is empty and is used as an example of calling an external method
+ * to do the right multiplication. Here the apply_to_row function above is used.
+ */
 template <typename FieldT>
 class Transformer : public AssemblerBase<FieldT> {
- protected:
  public:
-  Transformer() : AssemblerBase<FieldT>() {}
-
+  /*
+   * types from AssemblerBase
+   */
   using FieldType = typename AssemblerBase<FieldT>::FieldType;
   using MatrixType = typename AssemblerBase<FieldT>::MatrixType;
   using VectorType = typename AssemblerBase<FieldT>::VectorType;
@@ -50,16 +56,27 @@ class Transformer : public AssemblerBase<FieldT> {
   using OrdinalType = typename AssemblerBase<FieldT>::OrdinalType;
   using TagFieldMapType = typename AssemblerBase<FieldT>::TagFieldMapType;
 
+  /*
+   * @brief construct a Transformer
+   */
+  Transformer() : AssemblerBase<FieldT>() {}
+
   using AssemblerBase<FieldT>::assemble;
 
+  /*
+   * @brief right multiply by this Transformer
+   * @param a vector of field pointers representing a matrix row
+   * @param the index of the row being assembled
+   * @param the field requests needed by the assembler or by all composed
+   * assembler objects
+   * @param the mode of operation - an RMult() object here
+   */
   void assemble(VectorPtrType& row,
                 const OrdinalType rowIdx,
                 const TagFieldMapType& fieldReqs,
                 const RMult) const {
     assert(rowIdx < row.size());
-    std::cout << "Transformer: RMult->\n";
     apply_to_row(row);
-    std::cout << "Transformer: RMult.\n";
   }
 };
 }

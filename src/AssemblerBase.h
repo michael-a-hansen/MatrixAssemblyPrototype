@@ -28,6 +28,22 @@ namespace ast {
  * derived class that overrides the method, so its default implementation in
  * this base class is to throw an error.
  *
+ * The assemble method takes four parameters:
+ *
+ * 1. The row to be modified/assembled in-place. This must be a VectorPtrType,
+ * which is a vector of field pointers.
+ *
+ * 2. The index of the row being modified.
+ *
+ * 3. A map between tags and fields, which assemblers use to obtain fields for
+ * which they need and have tags.
+ *
+ * 4. The mode of operation, Place, AddIn, SubIn, and RMult (see below).
+ *
+ * To use an assembler to assemble a matrix, simply build the assembler, build
+ * the matrix to be assembled, and call assemble(...,Place) in a loop over each
+ * row.
+ *
  * All derived classes must be template classes. If they are to be used in an
  * emplacement operation, they must override the assemble(...,Place) method.
  * If they are never to be used in emplacement, for instance a state
@@ -64,22 +80,54 @@ namespace ast {
 template <typename FieldT>
 class AssemblerBase {
  protected:
-  const TagList requiredTags_;
-  const std::size_t nTags_;
+  TagList requiredTags_;
+  std::size_t nTags_;
 
  public:
-  AssemblerBase() : nTags_(0) {}
-  AssemblerBase(const TagList requiredTags)
-      : requiredTags_(requiredTags), nTags_(requiredTags.size()) {}
-
-  virtual ~AssemblerBase() {}
-
+  /*
+   * Common types needed by derived classes. These come from the matrix and
+   * maputil namespaces, and to isolate all dependencies on these types, derived
+   * classes should reference the types defined here in AssemblerBase<FieldT>.
+   */
   using FieldType = FieldT;
   using VectorType = typename matrix::Matrix<FieldType>::VectorType;
   using VectorPtrType = typename matrix::Matrix<FieldType>::VectorPtrType;
   using MatrixType = typename matrix::Matrix<FieldType>;
   using OrdinalType = typename matrix::OrdinalType;
   using TagFieldMapType = typename maputil::TagFieldMapType<FieldType>;
+
+  /*
+   * @brief empty constructor for AssemblerBase, initializes nTags to zero and
+   * requiredTags to an empty TagList (vector of tags).
+   */
+  AssemblerBase() : nTags_(0) {}
+
+  /*
+   * @brief constructor for building an AssemblerBase from a single tag.
+   */
+  AssemblerBase(const Tag& requiredTag)
+      : requiredTags_(make_nonempty_single_tag_list(requiredTag)), nTags_(1) {}
+
+  /*
+   * @brief constructor for building an AssemblerBase from a list (vector) of
+   * required tags. The list is copied into requiredTags and nTags is simply the
+   * size of the input TagList.
+   */
+  AssemblerBase(const TagList requiredTags)
+      : requiredTags_(requiredTags), nTags_(requiredTags.size()) {}
+
+  /*
+   * @brief empty virtual destructor for AssemblerBase
+   */
+  virtual ~AssemblerBase() {}
+
+  /*
+   * @brief set the required tags of this assembler
+   */
+  void set_required_tags(const TagList& tags) {
+    requiredTags_ = tags;
+    nTags_ = tags.size();
+  }
 
   /*
    * @brief get the list of required tags for this assembler object

@@ -9,11 +9,36 @@
 #define OPERATIONS_H_
 
 namespace ast {
-struct Mode {};
-struct Place : public Mode {};
-struct AddIn : public Mode {};
-struct SubIn : public Mode {};
-struct RMult : public Mode {};
+/*
+ * @class Place
+ *
+ * An empty type for emplacement assembly (replacing elements of a matrix
+ * according to an assembler).
+ */
+struct Place {};
+
+/*
+ * @class AddIn
+ *
+ * An empty type for addition assembly (adding into elements of a matrix
+ * according to an assembler)
+ */
+struct AddIn {};
+
+/*
+ * @class SubIn
+ *
+ * An empty type for subtraction assembly (subtracting from elements of a matrix
+ * according to an assembler)
+ */
+struct SubIn {};
+
+/*
+ * @class RMult
+ *
+ * An empty type for performing right-multiplication according to an assembler
+ */
+struct RMult {};
 }
 
 #endif /* OPERATIONS_H_ */
